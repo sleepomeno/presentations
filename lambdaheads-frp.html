@@ -171,8 +171,105 @@ apply :: Behavior (a -&gt; b) -&gt; Event a -&gt; Event b
 stepper :: MonadIO m =&gt; a -&gt; Event a -&gt; m (Behavior a)
 unionWith :: (a -&gt; a -&gt; a) -&gt; Event a -&gt; Event a -&gt; Event a</code></pre>
 <p>... a few more (see the <a href="http://hackage.haskell.org/package/threepenny-gui-0.6.0.3/docs/Reactive-Threepenny.html">the documentation</a>)</p>
-</section><section id="threepenny-demo" class="slide level2">
-<h1>Threepenny Demo</h1>
+</section><section id="threepenny-crud" class="slide level2">
+<h1>Threepenny CRUD</h1>
+<figure>
+<img src="imgs/crud.png" />
+</figure>
+</section><section id="threepenny-crud-1" class="slide level2">
+<h1>Threepenny CRUD</h1>
+<pre><code>type Key = Int
+type Names = (String,String)
+type Database = Map Key Names
+
+let bDatabase :: Behavior Database
+    bDatabase = accumB&#39; empty solution
+    solution :: [Event (Database -&gt; Database)]
+    solution = [ _createName, _updateName, _deleteName ]</code></pre>
+<div class="fragment">
+<pre><code>eCreate :: Event ()
+eDelete :: Event ()
+eNames  :: Event Names
+bSelection :: Behavior (Maybe Key)
+
+create :: Names -&gt; Database -&gt; Database
+update :: Maybe Key -&gt; Names -&gt; Maybe (Database -&gt; Database) 
+delete :: Key -&gt; Database -&gt; Database
+
+filterJust :: Event (Maybe a) -&gt; Event a
+(&lt;@) :: Behavior a -&gt; Event b -&gt; Event a
+(&lt;@&gt;) :: Behavior (a -&gt; b) -&gt; Event a -&gt; Event b</code></pre>
+</div>
+</section><section id="crud-createname-12" class="slide level2">
+<h1>CRUD createName 1/2</h1>
+<pre><code>createName :: Event (Database -&gt; Database)
+createName = ???</code></pre>
+<div class="fragment">
+<pre><code>eCreate :: Event ()
+
+emil = (&quot;Emil,&quot;Example&quot;) :: Names
+create :: Names -&gt; Database -&gt; Database
+const :: a -&gt; b -&gt; a
+fmap :: (a -&gt; b) -&gt; Event a -&gt; Event b</code></pre>
+</div>
+</section><section id="crud-createname-22" class="slide level2">
+<h1>CRUD createName 2/2</h1>
+<pre><code>eCreate :: Event ()
+
+emil = (&quot;Emil,&quot;Example&quot;) :: Names
+create :: Names -&gt; Database -&gt; Database
+const :: a -&gt; b -&gt; a
+fmap :: (a -&gt; b) -&gt; Event a -&gt; Event b</code></pre>
+<pre><code>createEmil :: Database -&gt; Database
+createEmil = create emil</code></pre>
+<div class="fragment">
+<pre><code>constCreateEmil :: () -&gt; (Database -&gt; Database)
+constCreateEmil = const createEmil</code></pre>
+</div>
+<div class="fragment">
+<pre><code>createName :: Event (Database -&gt; Database)
+createName = fmap constCreateEmil eCreate</code></pre>
+</div>
+<div class="fragment">
+<pre><code>-- More succinct:
+createName = create (&quot;Emil&quot;,&quot;Example&quot;) &lt;$ eCreate</code></pre>
+</div>
+</section><section id="crud-deletename-12" class="slide level2">
+<h1>CRUD deleteName 1/2</h1>
+<pre><code>deleteName :: Event (Database -&gt; Database)
+deleteName = ???</code></pre>
+<div class="fragment">
+<pre><code>eDelete :: Event ()
+bSelection :: Behavior (Maybe Key)
+
+delete :: Key -&gt; Database -&gt; Database
+fmap :: (a -&gt; b) -&gt; Event a -&gt; Event b
+
+(&lt;@) :: Behavior a -&gt; Event b -&gt; Event a
+filterJust :: Event (Maybe a) -&gt; Event a</code></pre>
+</div>
+</section><section id="crud-deletename-22" class="slide level2">
+<h1>CRUD deleteName 2/2</h1>
+<pre><code>eDelete :: Event ()
+bSelection :: Behavior (Maybe Key)
+
+delete :: Key -&gt; Database -&gt; Database
+fmap :: (a -&gt; b) -&gt; Event a -&gt; Event b
+
+(&lt;@) :: Behavior a -&gt; Event b -&gt; Event a
+filterJust :: Event (Maybe a) -&gt; Event a</code></pre>
+<div class="fragment">
+<pre><code>bSelectionOnDelete :: Event (Maybe Key)
+bSelectionOnDelete = bSelection &lt;@ eDelete</code></pre>
+</div>
+<div class="fragment">
+<pre><code>bKeyOnDelete :: Event Key
+bKeyOnDelete = filterJust bSelectionOnDelete</code></pre>
+</div>
+<div class="fragment">
+<pre><code>deleteName :: Event (Database -&gt; Database)
+deleteName = fmap delete bKeyOnDelete</code></pre>
+</div>
 </section><section id="threepenny-summary" class="slide level2">
 <h1>Threepenny summary</h1>
 <ul>
@@ -217,7 +314,7 @@ stack ghci                  # Voilà!</code></pre></li>
 </ul>
 </div>
 <div class="fragment">
-<p><span class="math"> ⇒ </span> Using GHC/GHCJS in a single project is going to be magical</p>
+<p><span class="math"> ⇒ </span> Using GHC/GHCJS in a single project is going to be &quot;magical&quot;!</p>
 </div>
 </section></section>
 <section><section id="reflex" class="titleslide slide level1"><h1>Reflex</h1></section><section id="reflex-libraries" class="slide level2">

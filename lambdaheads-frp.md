@@ -149,7 +149,153 @@ unionWith :: (a -> a -> a) -> Event a -> Event a -> Event a
 ```
 ... a few more (see the [the documentation](http://hackage.haskell.org/package/threepenny-gui-0.6.0.3/docs/Reactive-Threepenny.html))
 
-## Threepenny Demo
+## Threepenny CRUD
+
+
+![](imgs/crud.png)
+
+
+## Threepenny CRUD
+
+```
+type Key = Int
+type Names = (String,String)
+type Database = Map Key Names
+
+let bDatabase :: Behavior Database
+    bDatabase = accumB' empty solution
+    solution :: [Event (Database -> Database)]
+    solution = [ _createName, _updateName, _deleteName ]
+```
+
+. . . 
+
+```
+eCreate :: Event ()
+eDelete :: Event ()
+eNames  :: Event Names
+bSelection :: Behavior (Maybe Key)
+
+create :: Names -> Database -> Database
+update :: Maybe Key -> Names -> Maybe (Database -> Database) 
+delete :: Key -> Database -> Database
+
+filterJust :: Event (Maybe a) -> Event a
+(<@) :: Behavior a -> Event b -> Event a
+(<@>) :: Behavior (a -> b) -> Event a -> Event b
+```
+
+## CRUD createName 1/2
+
+```
+createName :: Event (Database -> Database)
+createName = ???
+```
+
+. . .
+
+```
+eCreate :: Event ()
+
+emil = ("Emil,"Example") :: Names
+create :: Names -> Database -> Database
+const :: a -> b -> a
+fmap :: (a -> b) -> Event a -> Event b
+```
+
+## CRUD createName 2/2
+
+```
+eCreate :: Event ()
+
+emil = ("Emil,"Example") :: Names
+create :: Names -> Database -> Database
+const :: a -> b -> a
+fmap :: (a -> b) -> Event a -> Event b
+```
+
+```
+createEmil :: Database -> Database
+createEmil = create emil
+```
+
+. . .
+
+```
+constCreateEmil :: () -> (Database -> Database)
+constCreateEmil = const createEmil
+```
+
+. . .
+
+```
+createName :: Event (Database -> Database)
+createName = fmap constCreateEmil eCreate
+```
+
+. . .
+
+```
+-- More succinct:
+createName = create ("Emil","Example") <$ eCreate
+```
+
+## CRUD deleteName 1/2
+
+```
+deleteName :: Event (Database -> Database)
+deleteName = ???
+```
+
+. . .
+
+```
+eDelete :: Event ()
+bSelection :: Behavior (Maybe Key)
+
+delete :: Key -> Database -> Database
+fmap :: (a -> b) -> Event a -> Event b
+
+(<@) :: Behavior a -> Event b -> Event a
+filterJust :: Event (Maybe a) -> Event a
+```
+
+## CRUD deleteName 2/2
+
+```
+eDelete :: Event ()
+bSelection :: Behavior (Maybe Key)
+
+delete :: Key -> Database -> Database
+fmap :: (a -> b) -> Event a -> Event b
+
+(<@) :: Behavior a -> Event b -> Event a
+filterJust :: Event (Maybe a) -> Event a
+```
+
+. . .
+
+```
+bSelectionOnDelete :: Event (Maybe Key)
+bSelectionOnDelete = bSelection <@ eDelete
+```
+
+. . . 
+
+```
+bKeyOnDelete :: Event Key
+bKeyOnDelete = filterJust bSelectionOnDelete
+```
+
+. . .
+
+```
+deleteName :: Event (Database -> Database)
+deleteName = fmap delete bKeyOnDelete
+```
+
+
+
 
 ## Threepenny summary
 
